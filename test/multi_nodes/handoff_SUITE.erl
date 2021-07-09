@@ -50,12 +50,15 @@ handoff_test(Config) ->
                   end,
                   lists:zip(Keys, Values)),
 
+    ct:pal("Leaving cluster"),
     % Node1 leave the cluster
     ok = rclref_cluster_manager:leave_cluster(Node1),
 
+    ct:pal("Left cluster, wait until disconnected"),
     % wait until Node2 cannnot connect to Node1 anymore
     ok = time_utils:wait_until_disconnected(Node2, Node1),
 
+    ct:pal("Check members after leave"),
     % check ring members after leave
     CurrentRingMembers1 = rclref_cluster_manager:ring_members(Node2),
     ct:pal("Ring members after node left :~p", [CurrentRingMembers1]),

@@ -12,7 +12,9 @@ set_up_nodes(Names, Ports, Config) ->
                         end,
                         lists:zip(Names, Ports)),
     Nodes = [Node || {connect, Node} <- NodesWithStatus],
+    ct:pal("Waiting until ring converging for ~p", [Names]),
     ok = riak_utils:wait_until_ring_converged(Nodes),
+    ct:pal("Ring converged for ~p", [Names]),
     Nodes.
 
 -spec start_node(atom(), non_neg_integer(), [tuple()]) ->
