@@ -44,7 +44,7 @@ format:
 	$(REBAR) format
 
 ct: 
-	$(REBAR) ct --sname test
+	$(REBAR) ct --sname test && cat _build/test/logs/last/suites/handoff_SUITE/*/logs/notice.log
 
 devrel: devrel1 devrel2 devrel3
 
