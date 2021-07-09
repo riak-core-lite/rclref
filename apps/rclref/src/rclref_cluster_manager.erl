@@ -9,8 +9,11 @@
 leave_cluster() ->
     logger:notice("~p This node leaves cluster", [node()]),
     ok = riak_core:leave(),
+    logger:notice("Riak core left successful", []),
     ok = wait_until_ring_ready(node()),
+    logger:notice("Wait until ring ready successful", []),
     ok = wait_until_ring_no_pending_changes(),
+    logger:notice("Wait until pending changes successful", []),
     ok.
 
 -spec leave_cluster(node()) -> ok | {error, term()}.
