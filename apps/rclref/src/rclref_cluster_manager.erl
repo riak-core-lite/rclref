@@ -78,8 +78,8 @@ plan_and_commit(NewNodeMembers) ->
 
 -spec wait_until_ring_no_pending_changes() -> ok.
 wait_until_ring_no_pending_changes() ->
-    %% this can crash after a node has left the ring
-    R = catch riak_core_ring_manager:get_my_ring(),
+    %% this can crash after a node has left the ring (race condition)
+    R = (catch riak_core_ring_manager:get_my_ring()),
     case R of
         {ok, CurrentRing} -> 
             Nodes = riak_core_ring:all_members(CurrentRing),
