@@ -7,6 +7,7 @@
 
 -spec leave_cluster() -> ok | {error, term()}.
 leave_cluster() ->
+    logger:notice("~p This node leaves cluster", [node()]),
     ok = riak_core:leave(),
     ok = wait_until_ring_ready(node()),
     ok = wait_until_ring_no_pending_changes(),
@@ -14,6 +15,7 @@ leave_cluster() ->
 
 -spec leave_cluster(node()) -> ok | {error, term()}.
 leave_cluster(Node) ->
+    ct:pal("Tell ~p node to leave cluster", [Node]),
     rpc:call(Node, rclref_cluster_manager, leave_cluster, []).
 
 -spec add_nodes_to_cluster([node()]) -> ok | {error, ring_not_ready}.

@@ -50,7 +50,7 @@ handoff_test(Config) ->
                   end,
                   lists:zip(Keys, Values)),
 
-    ct:pal("Leaving cluster"),
+    ct:pal("Leaving cluster for ~p", [Node1]),
     % Node1 leave the cluster
     ok = rclref_cluster_manager:leave_cluster(Node1),
 
