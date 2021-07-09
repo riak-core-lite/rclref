@@ -82,7 +82,6 @@ wait_until_ring_no_pending_changes() ->
     Ring = case persistent_term:get(riak_ring, undefined) of
                ets ->
                    logger:notice("Checking ETS"),
-                   logger:notice("Tab2List ~p", [ets:tab2list(ets_riak_core_ring_manager)]),
                    case ets:lookup(ets_riak_core_ring_manager, ring) of
                        [{_, RingETS}] -> RingETS;
                        _ -> undefined
