@@ -78,7 +78,22 @@ plan_and_commit(NewNodeMembers) ->
 
 -spec wait_until_ring_no_pending_changes() -> ok.
 wait_until_ring_no_pending_changes() ->
-    {ok, CurrentRing} = riak_core_ring_manager:get_my_ring(),
+    logger:notice("Waiting until no pending changes start"),
+    Ring = case persistent_term:get(riak_ring, undefined) of
+               ets ->
+                   logger:notice("Checking ETS"),
+                   logger:notice("Tab2List ~p", [ets:tab2list(ets_riak_core_ring_manager)]),
+                   case ets:lookup(ets_riak_core_ring_manager, ring) of
+                       [{_, RingETS}] -> RingETS;
+                       _ -> undefined
+                   end;
+               RingMochi -> RingMochi
+           end,
+    {ok, CurrentRing} = case Ring of
+        Ring when is_tuple(Ring) -> {ok, Ring};
+        undefined -> {error, no_ring}
+    end,
+    %{ok, CurrentRing} = riak_core_ring_manager:get_my_ring(),
     Nodes = riak_core_ring:all_members(CurrentRing),
     F =
         fun () ->
