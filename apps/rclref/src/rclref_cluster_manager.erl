@@ -78,40 +78,31 @@ plan_and_commit(NewNodeMembers) ->
 
 -spec wait_until_ring_no_pending_changes() -> ok.
 wait_until_ring_no_pending_changes() ->
-    logger:notice("Waiting until no pending changes start"),
-    Ring = case persistent_term:get(riak_ring, undefined) of
-               ets ->
-                   logger:notice("Checking ETS"),
-                   case ets:lookup(ets_riak_core_ring_manager, ring) of
-                       [{_, RingETS}] -> RingETS;
-                       _ -> undefined
-                   end;
-               RingMochi -> RingMochi
-           end,
-    {ok, CurrentRing} = case Ring of
-        Ring when is_tuple(Ring) -> {ok, Ring};
-        undefined -> {error, no_ring}
-    end,
-    %{ok, CurrentRing} = riak_core_ring_manager:get_my_ring(),
-    Nodes = riak_core_ring:all_members(CurrentRing),
-    F =
-        fun () ->
-                _ = rpc:multicall(Nodes, riak_core_vnode_manager, force_handoffs, []),
-                {Rings, BadNodes} = rpc:multicall(Nodes, riak_core_ring_manager, get_raw_ring, []),
-                Changes = [[] =:= riak_core_ring:pending_changes(Ring) || {ok, Ring} <- Rings],
-                BadNodes =:= [] andalso
-                  length(Changes) =:= length(Nodes) andalso
-                    lists:all(fun (T) ->
-                                      T
-                              end,
-                              Changes)
-        end,
-    case F() of
-      true ->
-          ok;
-      _ ->
-          timer:sleep(500),
-          wait_until_ring_no_pending_changes()
+    %% this can crash after a node has left the ring
+    R = catch riak_core_ring_manager:get_my_ring(),
+    case R of
+        {ok, CurrentRing} -> 
+            Nodes = riak_core_ring:all_members(CurrentRing),
+            F =
+                fun () ->
+                        _ = rpc:multicall(Nodes, riak_core_vnode_manager, force_handoffs, []),
+                        {Rings, BadNodes} = rpc:multicall(Nodes, riak_core_ring_manager, get_raw_ring, []),
+                        Changes = [[] =:= riak_core_ring:pending_changes(Ring) || {ok, Ring} <- Rings],
+                        BadNodes =:= [] andalso
+                            length(Changes) =:= length(Nodes) andalso
+                            lists:all(fun (T) ->
+                                                T
+                                        end,
+                                        Changes)
+                end,
+            case F() of
+                true ->
+                    ok;
+                _ ->
+                    timer:sleep(500),
+                    wait_until_ring_no_pending_changes()
+            end;
+        R -> logger:notice("Bad ~p", [R]), ok
     end.
 
 -spec wait_until_ring_ready(node()) -> ok.
