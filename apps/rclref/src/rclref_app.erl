@@ -10,6 +10,7 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
+    logger:notice("Starting rclref"),
     case rclref_sup:start_link() of
       {ok, Pid} ->
           ok = riak_core:register([{vnode_module, rclref_vnode}]),
@@ -29,7 +30,7 @@ setup_http_api() ->
     HttpAcceptors = rclref_config:http_acceptors(),
     HttpMaxConnections = rclref_config:http_max_connections(),
 
-    logger:info("Starting HTTP API at port ~p", [HttpPort]),
+    logger:notice("Starting HTTP API at port ~p", [HttpPort]),
 
     {ok, _} =
         cowboy:start_clear(rclref_http_listener,

@@ -12,7 +12,7 @@ release:
 	$(REBAR) release
 	mkdir -p $(RELPATH)/../rclref_config
 
-console:
+console: release
 	cd $(RELPATH) && ./bin/rclref console
 
 start:
