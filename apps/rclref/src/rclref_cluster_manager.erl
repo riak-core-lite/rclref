@@ -9,7 +9,9 @@
 leave_cluster() ->
     ok = riak_core:leave(),
     ok = wait_until_ring_ready(node()),
-    ok = wait_until_ring_no_pending_changes(),
+    % this call can crash 
+    % race condition between get_my_ring + timer:sleep(500) and node shutdown/leave
+    (catch wait_until_ring_no_pending_changes()),
     ok.
 
 -spec leave_cluster(node()) -> ok | {error, term()}.

@@ -11,6 +11,9 @@ all() ->
 
 init_per_suite(Config) ->
     application:ensure_all_started(rclref),
+    %% FIXME technical debt, start hackney with rclref properly
+    %%       why is rclref started here at all?
+    application:ensure_all_started(hackney),
     Names = [node1],
     Ports = [30200],
     Nodes = node_utils:set_up_nodes(Names, Ports, [{module, ?MODULE}]),
